@@ -1,4 +1,6 @@
 # gemini-cli
+[![Build](https://github.com/reugn/gemini-cli/actions/workflows/build.yml/badge.svg)](https://github.com/reugn/gemini-cli/actions/workflows/build.yml)
+
 A command-line interface (CLI) for [Google Gemini](https://deepmind.google/technologies/gemini/).
 
 Google Gemini is a family of multimodal artificial intelligence (AI) large language models that have
