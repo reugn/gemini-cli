@@ -1,6 +1,6 @@
 module github.com/reugn/gemini-cli
 
-go 1.21.0
+go 1.21
 
 require (
 	github.com/google/generative-ai-go v0.7.0
