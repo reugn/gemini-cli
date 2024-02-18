@@ -56,6 +56,7 @@ func (s *spinner) start() {
 	}()
 }
 
+//nolint:errcheck
 func (s *spinner) clear(n int) {
 	s.writer.WriteString(fmt.Sprintf(moveCursorBackward, n))
 	s.writer.WriteString(clearLineFromCursor)

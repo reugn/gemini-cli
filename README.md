@@ -1,5 +1,7 @@
 # gemini-cli
 [![Build](https://github.com/reugn/gemini-cli/actions/workflows/build.yml/badge.svg)](https://github.com/reugn/gemini-cli/actions/workflows/build.yml)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/reugn/gemini-cli)](https://pkg.go.dev/github.com/reugn/gemini-cli)
+[![Go Report Card](https://goreportcard.com/badge/github.com/reugn/gemini-cli)](https://goreportcard.com/report/github.com/reugn/gemini-cli)
 
 A command-line interface (CLI) for [Google Gemini](https://deepmind.google/technologies/gemini/).
 
