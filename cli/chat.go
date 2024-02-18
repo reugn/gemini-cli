@@ -11,7 +11,8 @@ import (
 
 // ChatOpts represents Chat configuration options.
 type ChatOpts struct {
-	Stream bool
+	Format bool
+	Style  string
 }
 
 // Chat controls the chat flow.

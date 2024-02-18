@@ -38,16 +38,17 @@ A short list of supported system commands:
 
 ### CLI help
 ```
+$ ./gemini -h
 Gemini CLI Tool
 
 Usage:
    [flags]
 
 Flags:
-      --chat      start chat session (default true)
-  -h, --help      help for this command
-      --stream    use streaming (default true)
-  -v, --version   version for this command
+  -f, --format         render markdown-formatted response (default true)
+  -h, --help           help for this command
+  -s, --style string   markdown format style (ascii, dark, light, pink, notty, dracula) (default "auto")
+  -v, --version        version for this command
 ```
 
 ## License

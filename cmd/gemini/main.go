@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"os"
 	"os/user"
 
@@ -16,10 +15,7 @@ const (
 	apiKeyEnv = "GEMINI_API_KEY"
 )
 
-var (
-	chat   = true
-	stream = true
-)
+var opts = cli.ChatOpts{}
 
 // run parses the CLI parameters and executes backup.
 func run() int {
@@ -28,22 +24,17 @@ func run() int {
 		Version: version,
 	}
 
-	rootCmd.Flags().BoolVar(&chat, "chat", true, "start chat session")
-	rootCmd.Flags().BoolVar(&stream, "stream", true, "use streaming")
+	rootCmd.Flags().BoolVarP(&opts.Format, "format", "f", true, "render markdown-formatted response")
+	rootCmd.Flags().StringVarP(&opts.Style, "style", "s", "auto",
+		"markdown format style (ascii, dark, light, pink, notty, dracula)")
 
 	rootCmd.RunE = func(_ *cobra.Command, _ []string) error {
-		if !chat {
-			return errors.New("only chat session is supported")
-		}
 		apiKey := os.Getenv(apiKeyEnv)
 		chatSession, err := gemini.NewChatSession(context.Background(), apiKey)
 		if err != nil {
 			return err
 		}
-		opts := &cli.ChatOpts{
-			Stream: stream,
-		}
-		chat := cli.NewChat(getCurrentUser(), chatSession, opts)
+		chat := cli.NewChat(getCurrentUser(), chatSession, &opts)
 		chat.StartChat()
 
 		chatSession.Close()

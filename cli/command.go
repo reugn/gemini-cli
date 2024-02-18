@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/charmbracelet/glamour"
 	"github.com/reugn/gemini-cli/cli/color"
 	"github.com/reugn/gemini-cli/gemini"
 	"google.golang.org/api/iterator"
@@ -57,7 +58,7 @@ type geminiCommand struct {
 	prompt  *prompt
 	spinner *spinner
 	writer  *bufio.Writer
-	stream  bool
+	opts    *ChatOpts
 }
 
 var _ command = (*geminiCommand)(nil)
@@ -69,17 +70,18 @@ func newGeminiCommand(model *gemini.ChatSession, prompt *prompt, opts *ChatOpts)
 		prompt:  prompt,
 		spinner: newSpinner(5, time.Second, writer),
 		writer:  writer,
-		stream:  opts.Stream,
+		opts:    opts,
 	}
 }
 
 func (c *geminiCommand) run(message string) bool {
 	c.printFlush(c.prompt.gemini)
 	c.spinner.start()
-	if c.stream {
-		c.runStreaming(message)
-	} else {
+	if c.opts.Format {
+		// requires full markdown for formatting
 		c.runBlocking(message)
+	} else {
+		c.runStreaming(message)
 	}
 	return false
 }
@@ -88,15 +90,22 @@ func (c *geminiCommand) runBlocking(message string) {
 	response, err := c.model.SendMessage(message)
 	c.spinner.stop()
 	if err != nil {
-		fmt.Print(color.Red(err.Error()))
+		fmt.Println(color.Red(err.Error()))
 	} else {
+		var buf strings.Builder
 		for _, candidate := range response.Candidates {
 			for _, part := range candidate.Content.Parts {
-				c.printFlush(fmt.Sprintf("%s", part))
+				buf.WriteString(fmt.Sprintf("%s", part))
 			}
 		}
+		output, err := glamour.Render(buf.String(), c.opts.Style)
+		if err != nil {
+			fmt.Printf(color.Red("Failed to format: %s\n"), err)
+			fmt.Println(buf.String())
+			return
+		}
+		fmt.Print(output)
 	}
-	fmt.Print("\n")
 }
 
 func (c *geminiCommand) runStreaming(message string) {
