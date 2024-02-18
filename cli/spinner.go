@@ -37,8 +37,9 @@ func (s *spinner) start() {
 		for {
 			select {
 			case <-s.signal:
-				s.writer.WriteString(fmt.Sprintf(moveCursorBackward, n))
-				s.writer.Flush()
+				if n > 0 {
+					s.clear(n)
+				}
 				s.signal <- struct{}{}
 				return
 			case <-ticker.C:
@@ -47,14 +48,18 @@ func (s *spinner) start() {
 					s.writer.Flush()
 					n++
 				} else {
-					s.writer.WriteString(fmt.Sprintf(moveCursorBackward, n))
-					s.writer.WriteString(clearLineFromCursor)
-					s.writer.Flush()
+					s.clear(n)
 					n = 0
 				}
 			}
 		}
 	}()
+}
+
+func (s *spinner) clear(n int) {
+	s.writer.WriteString(fmt.Sprintf(moveCursorBackward, n))
+	s.writer.WriteString(clearLineFromCursor)
+	s.writer.Flush()
 }
 
 func (s *spinner) stop() {
