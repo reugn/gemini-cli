@@ -1,11 +1,10 @@
 package cli
 
 import (
-	"bufio"
 	"fmt"
-	"os"
 	"strings"
 
+	"github.com/chzyer/readline"
 	"github.com/reugn/gemini-cli/gemini"
 )
 
@@ -19,24 +18,29 @@ type ChatOpts struct {
 type Chat struct {
 	model  *gemini.ChatSession
 	prompt *prompt
-	reader *bufio.Reader
+	reader *readline.Instance
 	opts   *ChatOpts
 }
 
 // NewChat returns a new Chat.
-func NewChat(user string, model *gemini.ChatSession, opts *ChatOpts) *Chat {
+func NewChat(user string, model *gemini.ChatSession, opts *ChatOpts) (*Chat, error) {
+	reader, err := readline.NewEx(&readline.Config{})
+	if err != nil {
+		return nil, err
+	}
+	prompt := newPrompt(user)
+	reader.SetPrompt(prompt.user)
 	return &Chat{
 		model:  model,
-		prompt: newPrompt(user),
-		reader: bufio.NewReader(os.Stdin),
+		prompt: prompt,
+		reader: reader,
 		opts:   opts,
-	}
+	}, nil
 }
 
 // StartChat starts the chat loop.
 func (c *Chat) StartChat() {
 	for {
-		fmt.Print(c.prompt.user)
 		message, ok := c.readLine()
 		if !ok {
 			continue
@@ -49,7 +53,7 @@ func (c *Chat) StartChat() {
 }
 
 func (c *Chat) readLine() (string, bool) {
-	input, err := c.reader.ReadString('\n')
+	input, err := c.reader.Readline()
 	if err != nil {
 		fmt.Printf("%s%s\n", c.prompt.cli, err)
 		return "", false

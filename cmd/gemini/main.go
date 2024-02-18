@@ -34,7 +34,10 @@ func run() int {
 		if err != nil {
 			return err
 		}
-		chat := cli.NewChat(getCurrentUser(), chatSession, &opts)
+		chat, err := cli.NewChat(getCurrentUser(), chatSession, &opts)
+		if err != nil {
+			return err
+		}
 		chat.StartChat()
 
 		chatSession.Close()
