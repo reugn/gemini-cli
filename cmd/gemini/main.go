@@ -17,7 +17,6 @@ const (
 
 var opts = cli.ChatOpts{}
 
-// run parses the CLI parameters and executes backup.
 func run() int {
 	rootCmd := &cobra.Command{
 		Short:   "Gemini CLI Tool",
