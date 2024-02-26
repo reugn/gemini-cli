@@ -18,8 +18,8 @@ Download and [install Go](https://golang.org/doc/install).
 
 Install the application:
 
-```sh
-go install github.com/reugn/gemini-cli/cmd/gemini@latest
+```console
+$ go install github.com/reugn/gemini-cli/cmd/gemini@latest
 ```
 
 See the [go install](https://go.dev/ref/mod#go-install) instructions for more information about the command.
@@ -27,7 +27,9 @@ See the [go install](https://go.dev/ref/mod#go-install) instructions for more in
 ## Usage
 
 ### API key
-To use `gemini-cli`, you'll need an API key set in the `GEMINI_API_KEY` environment variable. If you don't already have one, create a key in [Google AI Studio](https://makersuite.google.com/app/apikey).
+To use `gemini-cli`, you'll need an API key set in the `GEMINI_API_KEY` environment variable.  
+If you don't already have one, create a key in [Google AI Studio](https://makersuite.google.com/app/apikey).  
+*Note that Gemini API/Google AI Studio is [limited by region](https://ai.google.dev/available_regions#available_regions).*
 
 ### System commands
 The system chat message must begin with an exclamation mark and is used for internal operations.
@@ -39,7 +41,7 @@ A short list of supported system commands:
 | !p      | Purge the chat history |
 
 ### CLI help
-```
+```console
 $ ./gemini -h
 Gemini CLI Tool
 
