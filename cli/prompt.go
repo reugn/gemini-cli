@@ -13,17 +13,19 @@ const (
 )
 
 type prompt struct {
-	user   string
-	gemini string
-	cli    string
+	user     string
+	userNext string
+	gemini   string
+	cli      string
 }
 
 func newPrompt(currentUser string) *prompt {
 	maxLength := maxLength(currentUser, geminiUser, cliUser)
 	return &prompt{
-		user:   color.Blue(buildPrompt(currentUser, maxLength)),
-		gemini: color.Green(buildPrompt(geminiUser, maxLength)),
-		cli:    color.Yellow(buildPrompt(cliUser, maxLength)),
+		user:     color.Blue(buildPrompt(currentUser, maxLength)),
+		userNext: color.Blue(buildPrompt(strings.Repeat(" ", len(currentUser)), maxLength)),
+		gemini:   color.Green(buildPrompt(geminiUser, maxLength)),
+		cli:      color.Yellow(buildPrompt(cliUser, maxLength)),
 	}
 }
 

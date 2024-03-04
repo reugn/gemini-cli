@@ -14,7 +14,10 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-const systemCmdPrefix = "!"
+const (
+	systemCmdPrefix = "!"
+	systemCmdQuit   = "!q"
+)
 
 type command interface {
 	run(message string) bool

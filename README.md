@@ -49,7 +49,9 @@ Usage:
 Flags:
   -f, --format         render markdown-formatted response (default true)
   -h, --help           help for this command
+  -m, --multiline      read input as a multi-line string
   -s, --style string   markdown format style (ascii, dark, light, pink, notty, dracula) (default "auto")
+  -t, --term string    multi-line input terminator (default "$")
   -v, --version        version for this command
 ```
 
