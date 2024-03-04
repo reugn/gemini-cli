@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -10,8 +11,10 @@ import (
 
 // ChatOpts represents Chat configuration options.
 type ChatOpts struct {
-	Format bool
-	Style  string
+	Format     bool
+	Style      string
+	Multiline  bool
+	Terminator string
 }
 
 // Chat controls the chat flow.
@@ -41,7 +44,7 @@ func NewChat(user string, model *gemini.ChatSession, opts *ChatOpts) (*Chat, err
 // StartChat starts the chat loop.
 func (c *Chat) StartChat() {
 	for {
-		message, ok := c.readLine()
+		message, ok := c.read()
 		if !ok {
 			continue
 		}
@@ -52,17 +55,40 @@ func (c *Chat) StartChat() {
 	}
 }
 
+func (c *Chat) read() (string, bool) {
+	if c.opts.Multiline {
+		return c.readMultiLine()
+	}
+	return c.readLine()
+}
+
 func (c *Chat) readLine() (string, bool) {
 	input, err := c.reader.Readline()
 	if err != nil {
-		fmt.Printf("%s%s\n", c.prompt.cli, err)
-		return "", false
+		return c.handleReadError(err)
 	}
-	input = strings.ReplaceAll(input, "\n", "")
-	if strings.TrimSpace(input) == "" {
-		return "", false
+	return validateInput(input)
+}
+
+func (c *Chat) readMultiLine() (string, bool) {
+	var builder strings.Builder
+	term := c.opts.Terminator
+	for {
+		input, err := c.reader.Readline()
+		if err != nil {
+			return c.handleReadError(err)
+		}
+		if strings.HasSuffix(input, term) {
+			builder.WriteString(strings.TrimSuffix(input, term))
+			break
+		}
+		if builder.Len() == 0 {
+			c.reader.SetPrompt(c.prompt.userNext)
+		}
+		builder.WriteString(input + "\n")
 	}
-	return input, true
+	c.reader.SetPrompt(c.prompt.user)
+	return validateInput(builder.String())
 }
 
 func (c *Chat) parseCommand(message string) command {
@@ -70,4 +96,17 @@ func (c *Chat) parseCommand(message string) command {
 		return newSystemCommand(c.model, c.prompt)
 	}
 	return newGeminiCommand(c.model, c.prompt, c.opts)
+}
+
+func (c *Chat) handleReadError(err error) (string, bool) {
+	if errors.Is(err, readline.ErrInterrupt) {
+		return systemCmdQuit, true
+	}
+	fmt.Printf("%s%s\n", c.prompt.cli, err)
+	return "", false
+}
+
+func validateInput(input string) (string, bool) {
+	input = strings.TrimSpace(input)
+	return input, input != ""
 }

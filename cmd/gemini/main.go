@@ -15,17 +15,18 @@ const (
 	apiKeyEnv = "GEMINI_API_KEY"
 )
 
-var opts = cli.ChatOpts{}
-
 func run() int {
 	rootCmd := &cobra.Command{
 		Short:   "Gemini CLI Tool",
 		Version: version,
 	}
 
+	var opts cli.ChatOpts
 	rootCmd.Flags().BoolVarP(&opts.Format, "format", "f", true, "render markdown-formatted response")
 	rootCmd.Flags().StringVarP(&opts.Style, "style", "s", "auto",
 		"markdown format style (ascii, dark, light, pink, notty, dracula)")
+	rootCmd.Flags().BoolVarP(&opts.Multiline, "multiline", "m", false, "read input as a multi-line string")
+	rootCmd.Flags().StringVarP(&opts.Terminator, "term", "t", "$", "multi-line input terminator")
 
 	rootCmd.RunE = func(_ *cobra.Command, _ []string) error {
 		apiKey := os.Getenv(apiKeyEnv)
