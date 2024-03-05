@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/muesli/termenv"
 	"github.com/reugn/gemini-cli/cli/color"
 )
 
@@ -19,13 +20,35 @@ type prompt struct {
 	cli      string
 }
 
+type promptColor struct {
+	user   func(string) string
+	gemini func(string) string
+	cli    func(string) string
+}
+
+func newPromptColor() *promptColor {
+	if termenv.HasDarkBackground() {
+		return &promptColor{
+			user:   color.Cyan,
+			gemini: color.Green,
+			cli:    color.Yellow,
+		}
+	}
+	return &promptColor{
+		user:   color.Blue,
+		gemini: color.Green,
+		cli:    color.Magenta,
+	}
+}
+
 func newPrompt(currentUser string) *prompt {
 	maxLength := maxLength(currentUser, geminiUser, cliUser)
+	pc := newPromptColor()
 	return &prompt{
-		user:     color.Blue(buildPrompt(currentUser, maxLength)),
-		userNext: color.Blue(buildPrompt(strings.Repeat(" ", len(currentUser)), maxLength)),
-		gemini:   color.Green(buildPrompt(geminiUser, maxLength)),
-		cli:      color.Yellow(buildPrompt(cliUser, maxLength)),
+		user:     pc.user(buildPrompt(currentUser, maxLength)),
+		userNext: pc.user(buildPrompt(strings.Repeat(" ", len(currentUser)), maxLength)),
+		gemini:   pc.gemini(buildPrompt(geminiUser, maxLength)),
+		cli:      pc.cli(buildPrompt(cliUser, maxLength)),
 	}
 }
 
