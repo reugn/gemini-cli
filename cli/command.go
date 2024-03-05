@@ -10,13 +10,14 @@ import (
 
 	"github.com/charmbracelet/glamour"
 	"github.com/reugn/gemini-cli/cli/color"
-	"github.com/reugn/gemini-cli/gemini"
 	"google.golang.org/api/iterator"
 )
 
 const (
-	systemCmdPrefix = "!"
-	systemCmdQuit   = "!q"
+	systemCmdPrefix          = "!"
+	systemCmdQuit            = "!q"
+	systemCmdPurgeHistory    = "!p"
+	systemCmdToggleInputMode = "!m"
 )
 
 type command interface {
@@ -24,28 +25,37 @@ type command interface {
 }
 
 type systemCommand struct {
-	model  *gemini.ChatSession
-	prompt *prompt
+	chat *Chat
 }
 
 var _ command = (*systemCommand)(nil)
 
-func newSystemCommand(model *gemini.ChatSession, prompt *prompt) command {
+func newSystemCommand(chat *Chat) command {
 	return &systemCommand{
-		model:  model,
-		prompt: prompt,
+		chat: chat,
 	}
 }
 
 func (c *systemCommand) run(message string) bool {
-	message = strings.TrimPrefix(message, systemCmdPrefix)
 	switch message {
-	case "q":
+	case systemCmdQuit:
 		c.print("Exiting gemini-cli...")
 		return true
-	case "p":
-		c.model.ClearHistory()
+	case systemCmdPurgeHistory:
+		c.chat.model.ClearHistory()
 		c.print("Cleared the chat history.")
+	case systemCmdToggleInputMode:
+		if c.chat.opts.Multiline {
+			c.print("Switched to single-line input mode.")
+			c.chat.reader.HistoryEnable()
+			c.chat.opts.Multiline = false
+		} else {
+			c.print("Switched to multi-line input mode.")
+			// disable history for multi-line messages since it is
+			// unusable for future requests
+			c.chat.reader.HistoryDisable()
+			c.chat.opts.Multiline = true
+		}
 	default:
 		c.print("Unknown system command.")
 	}
@@ -53,35 +63,31 @@ func (c *systemCommand) run(message string) bool {
 }
 
 func (c *systemCommand) print(message string) {
-	fmt.Printf("%s%s\n", c.prompt.cli, message)
+	fmt.Printf("%s%s\n", c.chat.prompt.cli, message)
 }
 
 type geminiCommand struct {
-	model   *gemini.ChatSession
-	prompt  *prompt
+	chat    *Chat
 	spinner *spinner
 	writer  *bufio.Writer
-	opts    *ChatOpts
 }
 
 var _ command = (*geminiCommand)(nil)
 
-func newGeminiCommand(model *gemini.ChatSession, prompt *prompt, opts *ChatOpts) command {
+func newGeminiCommand(chat *Chat) command {
 	writer := bufio.NewWriter(os.Stdout)
 	return &geminiCommand{
-		model:   model,
-		prompt:  prompt,
+		chat:    chat,
 		spinner: newSpinner(5, time.Second, writer),
 		writer:  writer,
-		opts:    opts,
 	}
 }
 
 func (c *geminiCommand) run(message string) bool {
-	c.printFlush(c.prompt.gemini)
+	c.printFlush(c.chat.prompt.gemini)
 	c.spinner.start()
-	if c.opts.Format {
-		// requires full markdown for formatting
+	if c.chat.opts.Format {
+		// requires the entire response to be formatted
 		c.runBlocking(message)
 	} else {
 		c.runStreaming(message)
@@ -90,7 +96,7 @@ func (c *geminiCommand) run(message string) bool {
 }
 
 func (c *geminiCommand) runBlocking(message string) {
-	response, err := c.model.SendMessage(message)
+	response, err := c.chat.model.SendMessage(message)
 	c.spinner.stop()
 	if err != nil {
 		fmt.Println(color.Red(err.Error()))
@@ -101,7 +107,7 @@ func (c *geminiCommand) runBlocking(message string) {
 				buf.WriteString(fmt.Sprintf("%s", part))
 			}
 		}
-		output, err := glamour.Render(buf.String(), c.opts.Style)
+		output, err := glamour.Render(buf.String(), c.chat.opts.Style)
 		if err != nil {
 			fmt.Printf(color.Red("Failed to format: %s\n"), err)
 			fmt.Println(buf.String())
@@ -112,7 +118,7 @@ func (c *geminiCommand) runBlocking(message string) {
 }
 
 func (c *geminiCommand) runStreaming(message string) {
-	responseIterator := c.model.SendMessageStream(message)
+	responseIterator := c.chat.model.SendMessageStream(message)
 	c.spinner.stop()
 	for {
 		response, err := responseIterator.Next()

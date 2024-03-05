@@ -33,6 +33,9 @@ func NewChat(user string, model *gemini.ChatSession, opts *ChatOpts) (*Chat, err
 	}
 	prompt := newPrompt(user)
 	reader.SetPrompt(prompt.user)
+	if opts.Multiline {
+		reader.HistoryDisable()
+	}
 	return &Chat{
 		model:  model,
 		prompt: prompt,
@@ -93,9 +96,9 @@ func (c *Chat) readMultiLine() (string, bool) {
 
 func (c *Chat) parseCommand(message string) command {
 	if strings.HasPrefix(message, systemCmdPrefix) {
-		return newSystemCommand(c.model, c.prompt)
+		return newSystemCommand(c)
 	}
-	return newGeminiCommand(c.model, c.prompt, c.opts)
+	return newGeminiCommand(c)
 }
 
 func (c *Chat) handleReadError(err error) (string, bool) {
