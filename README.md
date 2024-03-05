@@ -36,10 +36,11 @@ To use `gemini-cli`, you'll need an API key set in the `GEMINI_API_KEY` environm
 The system chat message must begin with an exclamation mark and is used for internal operations.
 A short list of supported system commands:
 
-| Command | Descripton             |
-| ---     | ---                    |
-| !q      | Quit the application   |
-| !p      | Purge the chat history |
+| Command | Descripton
+| ---     | ---
+| !q      | Quit the application
+| !p      | Delete the history used as chat context by the model
+| !m      | Toggle input mode (single-line <-> multi-line)
 
 ### CLI help
 ```console
