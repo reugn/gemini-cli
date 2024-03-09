@@ -27,7 +27,8 @@ See the [go install](https://go.dev/ref/mod#go-install) instructions for more in
 ## Usage
 
 ### API key
-To use `gemini-cli`, you'll need an API key set in the `GEMINI_API_KEY` environment variable. If you don't already have one, create a key in [Google AI Studio](https://makersuite.google.com/app/apikey).
+To use `gemini-cli`, you'll need an API key set in the `GEMINI_API_KEY` environment variable.
+If you don't already have one, create a key in [Google AI Studio](https://makersuite.google.com/app/apikey).
 
 > [!NOTE]
 > For information on the available regions for the Gemini API and Google AI Studio, see [here](https://ai.google.dev/available_regions#available_regions).
@@ -36,7 +37,7 @@ To use `gemini-cli`, you'll need an API key set in the `GEMINI_API_KEY` environm
 The system chat message must begin with an exclamation mark and is used for internal operations.
 A short list of supported system commands:
 
-| Command | Descripton
+| Command | Description
 | ---     | ---
 | !q      | Quit the application
 | !p      | Delete the history used as chat context by the model
