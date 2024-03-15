@@ -9,7 +9,7 @@ import (
 const (
 	moveCursorBackward  = "\033[%dD"
 	clearLineFromCursor = "\033[K"
-	progressRune        = rune('.') // 46
+	progressRune        = '.'
 )
 
 type spinner struct {
