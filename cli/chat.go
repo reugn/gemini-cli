@@ -68,7 +68,7 @@ func (c *Chat) read() (string, bool) {
 func (c *Chat) readLine() (string, bool) {
 	input, err := c.reader.Readline()
 	if err != nil {
-		return c.handleReadError(input, err)
+		return c.handleReadError(len(input), err)
 	}
 	return validateInput(input)
 }
@@ -79,7 +79,8 @@ func (c *Chat) readMultiLine() (string, bool) {
 	for {
 		input, err := c.reader.Readline()
 		if err != nil {
-			return c.handleReadError(input, err)
+			c.reader.SetPrompt(c.prompt.user)
+			return c.handleReadError(builder.Len()+len(input), err)
 		}
 		if strings.HasSuffix(input, term) {
 			builder.WriteString(strings.TrimSuffix(input, term))
@@ -101,9 +102,9 @@ func (c *Chat) parseCommand(message string) command {
 	return newGeminiCommand(c)
 }
 
-func (c *Chat) handleReadError(input string, err error) (string, bool) {
+func (c *Chat) handleReadError(inputLen int, err error) (string, bool) {
 	if errors.Is(err, readline.ErrInterrupt) {
-		if len(input) == 0 {
+		if inputLen == 0 {
 			return systemCmdQuit, true
 		}
 		return "", false
