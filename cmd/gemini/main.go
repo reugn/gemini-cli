@@ -5,14 +5,14 @@ import (
 	"os"
 	"os/user"
 
-	"github.com/reugn/gemini-cli/cli"
 	"github.com/reugn/gemini-cli/gemini"
+	"github.com/reugn/gemini-cli/internal/cli"
 	"github.com/spf13/cobra"
 )
 
 const (
 	version   = "0.3.0"
-	apiKeyEnv = "GEMINI_API_KEY"
+	apiKeyEnv = "GEMINI_API_KEY" //nolint:gosec
 )
 
 func run() int {
@@ -34,14 +34,14 @@ func run() int {
 		if err != nil {
 			return err
 		}
+
 		chat, err := cli.NewChat(getCurrentUser(), chatSession, &opts)
 		if err != nil {
 			return err
 		}
 		chat.StartChat()
 
-		chatSession.Close()
-		return nil
+		return chatSession.Close()
 	}
 
 	err := rootCmd.Execute()

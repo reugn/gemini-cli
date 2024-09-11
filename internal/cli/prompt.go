@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/muesli/termenv"
-	"github.com/reugn/gemini-cli/cli/color"
+	"github.com/reugn/gemini-cli/internal/cli/color"
 )
 
 const (

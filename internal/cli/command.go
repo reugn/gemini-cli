@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/glamour"
-	"github.com/reugn/gemini-cli/cli/color"
+	"github.com/reugn/gemini-cli/internal/cli/color"
 	"google.golang.org/api/iterator"
 )
 
