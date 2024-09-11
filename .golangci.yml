@@ -8,7 +8,6 @@ linters:
     - errcheck
     - errname
     - errorlint
-    - exportloopref
     - funlen
     - gci
     - goconst
@@ -16,19 +15,24 @@ linters:
     - gocyclo
     - gofmt
     - goimports
+    - gosec
     - gosimple
     - govet
     - ineffassign
     - lll
     - misspell
+    - nolintlint
     - prealloc
     - revive
     - staticcheck
     - stylecheck
+    - thelper
+    - tparallel
     - typecheck
     - unconvert
     - unparam
     - unused
+    - whitespace
 
 issues:
   exclude-rules:
