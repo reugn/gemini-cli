@@ -11,6 +11,7 @@ import (
 
 // ChatOpts represents Chat configuration options.
 type ChatOpts struct {
+	Model      string
 	Format     bool
 	Style      string
 	Multiline  bool
