@@ -17,7 +17,8 @@ const (
 	systemCmdPrefix          = "!"
 	systemCmdQuit            = "!q"
 	systemCmdPurgeHistory    = "!p"
-	systemCmdToggleInputMode = "!m"
+	systemCmdSelectInputMode = "!i"
+	systemCmdSelectModel     = "!m"
 )
 
 type command interface {
@@ -44,18 +45,39 @@ func (c *systemCommand) run(message string) bool {
 	case systemCmdPurgeHistory:
 		c.chat.model.ClearHistory()
 		c.print("Cleared the chat history.")
-	case systemCmdToggleInputMode:
+	case systemCmdSelectInputMode:
+		multiline, err := selectInputMode(c.chat.opts.Multiline)
+		if err != nil {
+			c.error(err)
+			break
+		}
+		if multiline == c.chat.opts.Multiline {
+			c.printSelectedCurrent()
+			break
+		}
+		c.chat.opts.Multiline = multiline
 		if c.chat.opts.Multiline {
-			c.print("Switched to single-line input mode.")
-			c.chat.reader.HistoryEnable()
-			c.chat.opts.Multiline = false
-		} else {
 			c.print("Switched to multi-line input mode.")
 			// disable history for multi-line messages since it is
 			// unusable for future requests
 			c.chat.reader.HistoryDisable()
-			c.chat.opts.Multiline = true
+		} else {
+			c.print("Switched to single-line input mode.")
+			c.chat.reader.HistoryEnable()
 		}
+	case systemCmdSelectModel:
+		model, err := selectModel(c.chat.opts.Model, c.chat.model.ListModels())
+		if err != nil {
+			c.error(err)
+			break
+		}
+		if model == c.chat.opts.Model {
+			c.printSelectedCurrent()
+			break
+		}
+		c.chat.opts.Model = model
+		c.chat.model.SetGenerativeModel(model)
+		c.print(fmt.Sprintf("Selected '%s' generative model.", model))
 	default:
 		c.print("Unknown system command.")
 	}
@@ -64,6 +86,14 @@ func (c *systemCommand) run(message string) bool {
 
 func (c *systemCommand) print(message string) {
 	fmt.Printf("%s%s\n", c.chat.prompt.cli, message)
+}
+
+func (c *systemCommand) printSelectedCurrent() {
+	fmt.Printf("%sThe selection is unchanged.\n", c.chat.prompt.cli)
+}
+
+func (c *systemCommand) error(err error) {
+	fmt.Printf(color.Red("%s%s\n"), c.chat.prompt.cli, err)
 }
 
 type geminiCommand struct {
@@ -104,7 +134,7 @@ func (c *geminiCommand) runBlocking(message string) {
 		var buf strings.Builder
 		for _, candidate := range response.Candidates {
 			for _, part := range candidate.Content.Parts {
-				buf.WriteString(fmt.Sprintf("%s", part))
+				fmt.Fprintf(&buf, "%s", part)
 			}
 		}
 		output, err := glamour.Render(buf.String(), c.chat.opts.Style)
@@ -138,6 +168,6 @@ func (c *geminiCommand) runStreaming(message string) {
 }
 
 func (c *geminiCommand) printFlush(message string) {
-	fmt.Fprintf(c.writer, "%s", message)
-	c.writer.Flush()
+	_, _ = c.writer.WriteString(message)
+	_ = c.writer.Flush()
 }

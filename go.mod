@@ -6,6 +6,7 @@ require (
 	github.com/charmbracelet/glamour v0.7.0
 	github.com/chzyer/readline v1.5.1
 	github.com/google/generative-ai-go v0.18.0
+	github.com/manifoldco/promptui v0.9.0
 	github.com/muesli/termenv v0.15.2
 	github.com/spf13/cobra v1.8.1
 	google.golang.org/api v0.196.0

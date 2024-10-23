@@ -37,11 +37,12 @@ If you don't already have one, create a key in [Google AI Studio](https://makers
 The system chat message must begin with an exclamation mark and is used for internal operations.
 A short list of supported system commands:
 
-| Command | Description
-| ---     | ---
-| !q      | Quit the application
-| !p      | Delete the history used as chat context by the model
-| !m      | Toggle input mode (single-line <-> multi-line)
+| Command | Description                                          |
+|---------|------------------------------------------------------|
+| !q      | Quit the application                                 |
+| !p      | Delete the history used as chat context by the model |
+| !i      | Toggle input mode (single-line <-> multi-line)       |
+| !m      | Select generative model                              |
 
 ### CLI help
 ```console
@@ -54,7 +55,8 @@ Usage:
 Flags:
   -f, --format         render markdown-formatted response (default true)
   -h, --help           help for this command
-  -m, --multiline      read input as a multi-line string
+  -m, --model string   generative model name (default "gemini-pro")
+      --multiline      read input as a multi-line string
   -s, --style string   markdown format style (ascii, dark, light, pink, notty, dracula) (default "auto")
   -t, --term string    multi-line input terminator (default "$")
   -v, --version        version for this command
