@@ -13,11 +13,11 @@ const (
 	cliUser    = "cli"
 )
 
-type prompt struct {
-	user     string
-	userNext string
-	gemini   string
-	cli      string
+type Prompt struct {
+	User     string
+	UserNext string
+	Gemini   string
+	Cli      string
 }
 
 type promptColor struct {
@@ -41,14 +41,14 @@ func newPromptColor() *promptColor {
 	}
 }
 
-func newPrompt(currentUser string) *prompt {
+func NewPrompt(currentUser string) *Prompt {
 	maxLength := maxLength(currentUser, geminiUser, cliUser)
 	pc := newPromptColor()
-	return &prompt{
-		user:     pc.user(buildPrompt(currentUser, maxLength)),
-		userNext: pc.user(buildPrompt(strings.Repeat(" ", len(currentUser)), maxLength)),
-		gemini:   pc.gemini(buildPrompt(geminiUser, maxLength)),
-		cli:      pc.cli(buildPrompt(cliUser, maxLength)),
+	return &Prompt{
+		User:     pc.user(buildPrompt(currentUser, maxLength)),
+		UserNext: pc.user(buildPrompt(strings.Repeat(" ", len(currentUser)), maxLength)),
+		Gemini:   pc.gemini(buildPrompt(geminiUser, maxLength)),
+		Cli:      pc.cli(buildPrompt(cliUser, maxLength)),
 	}
 }
 

@@ -6,13 +6,15 @@ import (
 	"os/user"
 
 	"github.com/reugn/gemini-cli/gemini"
-	"github.com/reugn/gemini-cli/internal/cli"
+	"github.com/reugn/gemini-cli/internal/chat"
+	"github.com/reugn/gemini-cli/internal/config"
 	"github.com/spf13/cobra"
 )
 
 const (
-	version   = "0.3.1"
-	apiKeyEnv = "GEMINI_API_KEY" //nolint:gosec
+	version           = "0.3.1"
+	apiKeyEnv         = "GEMINI_API_KEY" //nolint:gosec
+	defaultConfigPath = "gemini_cli_config.json"
 )
 
 func run() int {
@@ -21,26 +23,39 @@ func run() int {
 		Version: version,
 	}
 
-	var opts cli.ChatOpts
-	rootCmd.Flags().StringVarP(&opts.Model, "model", "m", gemini.DefaultModel, "generative model name")
-	rootCmd.Flags().BoolVarP(&opts.Format, "format", "f", true, "render markdown-formatted response")
+	var opts chat.Opts
+	var configPath string
+	rootCmd.Flags().StringVarP(&opts.GenerativeModel, "model", "m", gemini.DefaultModel,
+		"generative model name")
 	rootCmd.Flags().StringVarP(&opts.Style, "style", "s", "auto",
 		"markdown format style (ascii, dark, light, pink, notty, dracula)")
-	rootCmd.Flags().BoolVar(&opts.Multiline, "multiline", false, "read input as a multi-line string")
-	rootCmd.Flags().StringVarP(&opts.Terminator, "term", "t", "$", "multi-line input terminator")
+	rootCmd.Flags().BoolVar(&opts.Multiline, "multiline", false,
+		"read input as a multi-line string")
+	rootCmd.Flags().StringVarP(&opts.LineTerminator, "term", "t", "$",
+		"multi-line input terminator")
+	rootCmd.Flags().StringVarP(&configPath, "config", "c", defaultConfigPath,
+		"path to configuration file in JSON format")
 
 	rootCmd.RunE = func(_ *cobra.Command, _ []string) error {
-		apiKey := os.Getenv(apiKeyEnv)
-		chatSession, err := gemini.NewChatSession(context.Background(), opts.Model, apiKey)
+		configuration, err := config.NewConfiguration(configPath)
 		if err != nil {
 			return err
 		}
 
-		chat, err := cli.NewChat(getCurrentUser(), chatSession, &opts)
+		modelBuilder := gemini.NewGenerativeModelBuilder().
+			WithName(opts.GenerativeModel).
+			WithSafetySettings(configuration.Data.SafetySettings)
+		apiKey := os.Getenv(apiKeyEnv)
+		chatSession, err := gemini.NewChatSession(context.Background(), modelBuilder, apiKey)
 		if err != nil {
 			return err
 		}
-		chat.StartChat()
+
+		chatHandler, err := chat.New(getCurrentUser(), chatSession, configuration, os.Stdout, &opts)
+		if err != nil {
+			return err
+		}
+		chatHandler.Start()
 
 		return chatSession.Close()
 	}

@@ -8,16 +8,16 @@ A command-line interface (CLI) for [Google Gemini](https://deepmind.google/techn
 Google Gemini is a family of multimodal artificial intelligence (AI) large language models that have
 capabilities in language, audio, code and video understanding.
 
-The current version only supports multi-turn conversations (chat), using the `gemini-pro` model.
+This application offers a command-line interface for interacting with various generative models through
+multi-turn chat. Model selection is controlled via [system command](#system-commands) inputs.
 
 ## Installation
-Choose a binary from the [releases](https://github.com/reugn/gemini-cli/releases).
+Choose a binary from [releases](https://github.com/reugn/gemini-cli/releases).
 
 ### Build from Source
 Download and [install Go](https://golang.org/doc/install).
 
 Install the application:
-
 ```sh
 go install github.com/reugn/gemini-cli/cmd/gemini@latest
 ```
@@ -25,24 +25,73 @@ go install github.com/reugn/gemini-cli/cmd/gemini@latest
 See the [go install](https://go.dev/ref/mod#go-install) instructions for more information about the command.
 
 ## Usage
+> [!NOTE]
+> For information on the available regions for the Gemini API and Google AI Studio,
+> see [here](https://ai.google.dev/available_regions#available_regions).
 
 ### API key
 To use `gemini-cli`, you'll need an API key set in the `GEMINI_API_KEY` environment variable.
 If you don't already have one, create a key in [Google AI Studio](https://makersuite.google.com/app/apikey).
 
-> [!NOTE]
-> For information on the available regions for the Gemini API and Google AI Studio, see [here](https://ai.google.dev/available_regions#available_regions).
+To set the environment variable in the terminal:
+```console
+export GEMINI_API_KEY=<your_api_key>
+```
 
 ### System commands
 The system chat message must begin with an exclamation mark and is used for internal operations.
 A short list of supported system commands:
 
-| Command | Description                                          |
-|---------|------------------------------------------------------|
-| !q      | Quit the application                                 |
-| !p      | Delete the history used as chat context by the model |
-| !i      | Toggle input mode (single-line <-> multi-line)       |
-| !m      | Select generative model                              |
+| Command | Description                                        |
+|---------|----------------------------------------------------|
+| !q      | Quit the application                               |
+| !p      | Select the system prompt for the chat <sup>1</sup> |
+| !i      | Toggle input mode (single-line <-> multi-line)     |
+| !m      | Select a model operation <sup>2</sup>              |
+| !h      | Select a history operation <sup>3</sup>            |
+
+<sup>1</sup> System instruction (also known as "system prompt") is a more forceful prompt to the model.
+The model will adhere the instructions more strongly than if they appeared in a normal prompt.
+The system instructions must be specified by the user in the [configuration file](#configuration-file).
+
+<sup>2</sup> Model operations:
+* Select a generative model from the list of available models
+* Show the selected model information
+
+<sup>3</sup> History operations:
+* Clear the chat history
+* Store the chat history to the configuration file
+* Load a chat history record from the configuration file
+* Delete all history records from the configuration file
+
+### Configuration file
+The application uses a configuration file to store generative model settings and chat history. This file is optional.
+If it doesn't exist, the application will attempt to create it using default values. You can use the
+[config flag](#cli-help) to specify the location of the configuration file.
+
+An example of basic configuration:
+```json
+{
+  "SystemPrompts": {
+    "Software Engineer": "You are an experienced software engineer.",
+    "Technical Writer": "Act as a tech writer. I will provide you with the basic steps of an app functionality, and you will come up with an engaging article on how to do those steps."
+  },
+  "SafetySettings": [
+    {
+      "Category": 7,
+      "Threshold": 1
+    },
+    {
+      "Category": 10,
+      "Threshold": 1
+    }
+  ],
+  "History": {
+  }
+}
+```
+Upon user request, the `History` map will be populated with records. Note that the chat history is stored in plain
+text format. See [history operations](#system-commands) for details.
 
 ### CLI help
 ```console
@@ -53,13 +102,13 @@ Usage:
    [flags]
 
 Flags:
-  -f, --format         render markdown-formatted response (default true)
-  -h, --help           help for this command
-  -m, --model string   generative model name (default "gemini-pro")
-      --multiline      read input as a multi-line string
-  -s, --style string   markdown format style (ascii, dark, light, pink, notty, dracula) (default "auto")
-  -t, --term string    multi-line input terminator (default "$")
-  -v, --version        version for this command
+  -c, --config string   path to configuration file in JSON format (default "gemini_cli_config.json")
+  -h, --help            help for this command
+  -m, --model string    generative model name (default "gemini-pro")
+      --multiline       read input as a multi-line string
+  -s, --style string    markdown format style (ascii, dark, light, pink, notty, dracula) (default "auto")
+  -t, --term string     multi-line input terminator (default "$")
+  -v, --version         version for this command
 ```
 
 ## License

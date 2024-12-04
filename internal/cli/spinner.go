@@ -3,6 +3,7 @@ package cli
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"time"
 )
 
@@ -12,44 +13,49 @@ const (
 	progressRune        = '.'
 )
 
-type spinner struct {
-	length   int
-	interval time.Duration
+// Spinner is a visual indicator of progress displayed in the terminal as a
+// scrolling dot animation.
+type Spinner struct {
 	writer   *bufio.Writer
+	interval time.Duration
 	signal   chan struct{}
+
+	maxLength int
+	length    int
 }
 
-func newSpinner(length int, interval time.Duration, writer *bufio.Writer) *spinner {
-	return &spinner{
-		length:   length,
-		interval: interval,
-		writer:   writer,
-		signal:   make(chan struct{}),
+// NewSpinner returns a new Spinner.
+func NewSpinner(w io.Writer, interval time.Duration, length int) *Spinner {
+	return &Spinner{
+		writer:    bufio.NewWriter(w),
+		interval:  interval,
+		signal:    make(chan struct{}),
+		maxLength: length,
 	}
 }
 
 //nolint:errcheck
-func (s *spinner) start() {
+func (s *Spinner) Start() {
 	go func() {
 		ticker := time.NewTicker(s.interval)
 		defer ticker.Stop()
-		var n int
+		s.length = 0
 		for {
 			select {
 			case <-s.signal:
-				if n > 0 {
-					s.clear(n)
+				if s.length > 0 {
+					s.Clear()
 				}
 				s.signal <- struct{}{}
 				return
 			case <-ticker.C:
-				if n < s.length {
+				if s.length < s.maxLength {
 					s.writer.WriteRune(progressRune)
 					s.writer.Flush()
-					n++
+					s.length++
 				} else {
-					s.clear(n)
-					n = 0
+					s.Clear()
+					s.length = 0
 				}
 			}
 		}
@@ -57,13 +63,13 @@ func (s *spinner) start() {
 }
 
 //nolint:errcheck
-func (s *spinner) clear(n int) {
-	s.writer.WriteString(fmt.Sprintf(moveCursorBackward, n))
+func (s *Spinner) Clear() {
+	s.writer.WriteString(fmt.Sprintf(moveCursorBackward, s.length))
 	s.writer.WriteString(clearLineFromCursor)
 	s.writer.Flush()
 }
 
-func (s *spinner) stop() {
+func (s *Spinner) Stop() {
 	s.signal <- struct{}{}
 	<-s.signal
 }
