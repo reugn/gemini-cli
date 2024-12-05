@@ -13,18 +13,20 @@ import (
 // SystemPromptCommand processes the chat prompt system command.
 // It implements the MessageHandler interface.
 type SystemPromptCommand struct {
+	*IO
 	session         *gemini.ChatSession
 	applicationData *config.ApplicationData
 
-	currentPrompt string
+	systemPrompt string
 }
 
 var _ MessageHandler = (*SystemPromptCommand)(nil)
 
 // NewSystemPromptCommand returns a new SystemPromptCommand.
-func NewSystemPromptCommand(session *gemini.ChatSession,
+func NewSystemPromptCommand(io *IO, session *gemini.ChatSession,
 	applicationData *config.ApplicationData) *SystemPromptCommand {
 	return &SystemPromptCommand{
+		IO:              io,
 		session:         session,
 		applicationData: applicationData,
 	}
@@ -32,6 +34,7 @@ func NewSystemPromptCommand(session *gemini.ChatSession,
 
 // Handle processes the chat prompt system command.
 func (h *SystemPromptCommand) Handle(_ string) (Response, bool) {
+	defer h.terminal.Write(h.terminalPrompt)
 	label, systemPrompt, err := h.selectSystemPrompt()
 	if err != nil {
 		return newErrorResponse(err), false
@@ -57,7 +60,7 @@ func (h *SystemPromptCommand) selectSystemPrompt() (string, *genai.Content, erro
 		Label:        "Select system instruction",
 		HideSelected: true,
 		Items:        promptNames,
-		CursorPos:    slices.Index(promptNames, h.currentPrompt),
+		CursorPos:    slices.Index(promptNames, h.systemPrompt),
 	}
 
 	_, result, err := prompt.Run()
@@ -65,7 +68,7 @@ func (h *SystemPromptCommand) selectSystemPrompt() (string, *genai.Content, erro
 		return result, nil, err
 	}
 
-	h.currentPrompt = result
+	h.systemPrompt = result
 	if result == empty {
 		return result, nil, nil
 	}

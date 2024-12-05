@@ -16,17 +16,19 @@ var modelOptions = []string{
 // ModelCommand processes the chat model system commands.
 // It implements the MessageHandler interface.
 type ModelCommand struct {
-	session      *gemini.ChatSession
-	currentModel string
+	*IO
+	session             *gemini.ChatSession
+	generativeModelName string
 }
 
 var _ MessageHandler = (*ModelCommand)(nil)
 
 // NewModelCommand returns a new ModelCommand.
-func NewModelCommand(session *gemini.ChatSession, modelName string) *ModelCommand {
+func NewModelCommand(io *IO, session *gemini.ChatSession, modelName string) *ModelCommand {
 	return &ModelCommand{
-		session:      session,
-		currentModel: modelName,
+		IO:                  io,
+		session:             session,
+		generativeModelName: modelName,
 	}
 }
 
@@ -51,24 +53,29 @@ func (h *ModelCommand) Handle(_ string) (Response, bool) {
 
 // handleSelectModel handles the generative model selection.
 func (h *ModelCommand) handleSelectModel() Response {
-	model, err := h.selectModel(h.session.ListModels())
+	defer h.terminal.Write(h.terminalPrompt)
+	modelName, err := h.selectModel(h.session.ListModels())
 	if err != nil {
 		return newErrorResponse(err)
 	}
 
-	if h.currentModel == model {
+	if h.generativeModelName == modelName {
 		return dataResponse(unchangedMessage)
 	}
 
-	modelBuilder := h.session.CopyModelBuilder().WithName(model)
+	modelBuilder := h.session.CopyModelBuilder().WithName(modelName)
 	h.session.SetModel(modelBuilder)
-	h.currentModel = model
+	h.generativeModelName = modelName
 
-	return dataResponse(fmt.Sprintf("Selected %q generative model.", model))
+	return dataResponse(fmt.Sprintf("Selected %q generative model.", modelName))
 }
 
 // handleSelectModel handles the current generative model info request.
 func (h *ModelCommand) handleModelInfo() Response {
+	h.terminal.Write(h.terminalPrompt)
+	h.terminal.Spinner.Start()
+	defer h.terminal.Spinner.Stop()
+
 	modelInfo, err := h.session.ModelInfo()
 	if err != nil {
 		return newErrorResponse(err)
@@ -98,7 +105,7 @@ func (h *ModelCommand) selectModel(models []string) (string, error) {
 		Label:        "Select generative session",
 		HideSelected: true,
 		Items:        models,
-		CursorPos:    slices.Index(models, h.currentModel),
+		CursorPos:    slices.Index(models, h.generativeModelName),
 	}
 
 	_, result, err := prompt.Run()

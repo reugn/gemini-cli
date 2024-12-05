@@ -1,11 +1,11 @@
-package cli
+package terminal
 
 import (
 	"fmt"
 	"strings"
 
 	"github.com/muesli/termenv"
-	"github.com/reugn/gemini-cli/internal/cli/color"
+	"github.com/reugn/gemini-cli/internal/terminal/color"
 )
 
 const (

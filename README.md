@@ -33,8 +33,8 @@ See the [go install](https://go.dev/ref/mod#go-install) instructions for more in
 To use `gemini-cli`, you'll need an API key set in the `GEMINI_API_KEY` environment variable.
 If you don't already have one, create a key in [Google AI Studio](https://makersuite.google.com/app/apikey).
 
-To set the environment variable in the terminal:
-```console
+Set the environment variable in the terminal:
+```sh
 export GEMINI_API_KEY=<your_api_key>
 ```
 
@@ -51,8 +51,9 @@ A short list of supported system commands:
 | !h      | Select a history operation <sup>3</sup>            |
 
 <sup>1</sup> System instruction (also known as "system prompt") is a more forceful prompt to the model.
-The model will adhere the instructions more strongly than if they appeared in a normal prompt.
-The system instructions must be specified by the user in the [configuration file](#configuration-file).
+The model will follow instructions more closely than with a standard prompt.
+The user must specify system instructions in the [configuration file](#configuration-file).
+Note that not all generative models support them.
 
 <sup>2</sup> Model operations:
 * Select a generative model from the list of available models
