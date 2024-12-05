@@ -2,28 +2,21 @@ package handler
 
 import (
 	"fmt"
-	"io"
 
-	"github.com/reugn/gemini-cli/internal/cli/color"
-)
-
-const (
-	empty            = "Empty"
-	unchangedMessage = "The selection is unchanged."
+	"github.com/reugn/gemini-cli/internal/terminal"
 )
 
 // Response represents a response from a chat message handler.
 type Response interface {
-	Print(w io.Writer, prompt string) error
+	fmt.Stringer
 }
 
 type dataResponse string
 
 var _ Response = (*dataResponse)(nil)
 
-func (r dataResponse) Print(w io.Writer, prompt string) error {
-	_, err := fmt.Fprintf(w, "%s%s\n", prompt, r)
-	return err
+func (r dataResponse) String() string {
+	return fmt.Sprintf("%s\n", string(r))
 }
 
 type errorResponse struct {
@@ -36,11 +29,6 @@ func newErrorResponse(err error) errorResponse {
 
 var _ Response = (*errorResponse)(nil)
 
-func (r errorResponse) Print(w io.Writer, prompt string) error {
-	_, err := fmt.Fprintf(w, "%s%s\n", prompt, color.Red(r.Error()))
-	return err
-}
-
-func PrintError(w io.Writer, prompt string, err error) {
-	_ = newErrorResponse(err).Print(w, prompt)
+func (r errorResponse) String() string {
+	return fmt.Sprintf("%s\n", terminal.Error(r.Error()))
 }

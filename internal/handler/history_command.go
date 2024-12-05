@@ -21,6 +21,7 @@ var historyOptions = []string{
 // HistoryCommand processes the chat history system commands.
 // It implements the MessageHandler interface.
 type HistoryCommand struct {
+	*IO
 	session       *gemini.ChatSession
 	configuration *config.Configuration
 }
@@ -28,9 +29,10 @@ type HistoryCommand struct {
 var _ MessageHandler = (*HistoryCommand)(nil)
 
 // NewHistoryCommand returns a new HistoryCommand.
-func NewHistoryCommand(session *gemini.ChatSession,
+func NewHistoryCommand(io *IO, session *gemini.ChatSession,
 	configuration *config.Configuration) *HistoryCommand {
 	return &HistoryCommand{
+		IO:            io,
 		session:       session,
 		configuration: configuration,
 	}
@@ -60,12 +62,14 @@ func (h *HistoryCommand) Handle(_ string) (Response, bool) {
 
 // handleClear handles the chat history clear request.
 func (h *HistoryCommand) handleClear() Response {
+	h.terminal.Write(h.terminalPrompt)
 	h.session.ClearHistory()
 	return dataResponse("Cleared the chat history.")
 }
 
 // handleStore handles the chat history store request.
 func (h *HistoryCommand) handleStore() Response {
+	defer h.terminal.Write(h.terminalPrompt)
 	historyLabel, err := h.promptHistoryLabel()
 	if err != nil {
 		return newErrorResponse(err)
@@ -87,6 +91,7 @@ func (h *HistoryCommand) handleStore() Response {
 
 // handleLoad handles the chat history load request.
 func (h *HistoryCommand) handleLoad() Response {
+	defer h.terminal.Write(h.terminalPrompt)
 	label, history, err := h.loadHistory()
 	if err != nil {
 		return newErrorResponse(err)
@@ -98,6 +103,7 @@ func (h *HistoryCommand) handleLoad() Response {
 
 // handleDelete handles deletion of the stored history records.
 func (h *HistoryCommand) handleDelete() Response {
+	h.terminal.Write(h.terminalPrompt)
 	h.configuration.Data.History = make(map[string][]*gemini.SerializableContent)
 	if err := h.configuration.Flush(); err != nil {
 		return newErrorResponse(err)

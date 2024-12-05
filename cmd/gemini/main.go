@@ -51,7 +51,7 @@ func run() int {
 			return err
 		}
 
-		chatHandler, err := chat.New(getCurrentUser(), chatSession, configuration, os.Stdout, &opts)
+		chatHandler, err := chat.New(getCurrentUser(), chatSession, configuration, &opts)
 		if err != nil {
 			return err
 		}

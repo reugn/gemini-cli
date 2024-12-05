@@ -6,39 +6,38 @@ import (
 
 	"github.com/charmbracelet/glamour"
 	"github.com/reugn/gemini-cli/gemini"
-	"github.com/reugn/gemini-cli/internal/cli"
 )
 
 // GeminiQuery processes queries to gemini models.
 // It implements the MessageHandler interface.
 type GeminiQuery struct {
+	*IO
 	session  *gemini.ChatSession
-	spinner  *cli.Spinner
 	renderer *glamour.TermRenderer
 }
 
 var _ MessageHandler = (*GeminiQuery)(nil)
 
 // NewGeminiQuery returns a new GeminiQuery message handler.
-func NewGeminiQuery(session *gemini.ChatSession, spinner *cli.Spinner,
-	style string) (*GeminiQuery, error) {
+func NewGeminiQuery(io *IO, session *gemini.ChatSession, style string) (*GeminiQuery, error) {
 	renderer, err := glamour.NewTermRenderer(glamour.WithStylePath(style))
 	if err != nil {
 		return nil, fmt.Errorf("failed to instantiate terminal renderer: %w", err)
 	}
 
 	return &GeminiQuery{
+		IO:       io,
 		session:  session,
-		spinner:  spinner,
 		renderer: renderer,
 	}, nil
 }
 
 // Handle processes the chat message.
 func (h *GeminiQuery) Handle(message string) (Response, bool) {
-	h.spinner.Start()
+	h.terminal.Spinner.Start()
+	defer h.terminal.Spinner.Stop()
+
 	response, err := h.session.SendMessage(message)
-	h.spinner.Stop()
 	if err != nil {
 		return newErrorResponse(err), false
 	}

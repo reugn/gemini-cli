@@ -3,7 +3,6 @@ package handler
 import (
 	"fmt"
 
-	"github.com/chzyer/readline"
 	"github.com/manifoldco/promptui"
 )
 
@@ -15,42 +14,41 @@ var inputModeOptions = []string{
 // InputModeCommand processes the chat input mode system command.
 // It implements the MessageHandler interface.
 type InputModeCommand struct {
-	reader    *readline.Instance
-	multiline *bool
+	*IO
 }
 
 var _ MessageHandler = (*InputModeCommand)(nil)
 
 // NewInputModeCommand returns a new InputModeCommand.
-func NewInputModeCommand(reader *readline.Instance, multiline *bool) *InputModeCommand {
+func NewInputModeCommand(io *IO) *InputModeCommand {
 	return &InputModeCommand{
-		reader:    reader,
-		multiline: multiline,
+		IO: io,
 	}
 }
 
 // Handle processes the chat input mode system command.
 func (h *InputModeCommand) Handle(_ string) (Response, bool) {
+	defer h.terminal.Write(h.terminalPrompt)
 	multiline, err := h.selectInputMode()
 	if err != nil {
 		return newErrorResponse(err), false
 	}
 
-	if *h.multiline == multiline {
+	if h.terminal.Config.Multiline == multiline {
 		// the same input mode is selected
 		return dataResponse(unchangedMessage), false
 	}
 
-	*h.multiline = multiline
-	if *h.multiline {
+	h.terminal.Config.Multiline = multiline
+	if h.terminal.Config.Multiline {
 		// disable history for multi-line messages since it is
 		// unusable for future requests
-		h.reader.HistoryDisable()
+		h.terminal.Reader.HistoryDisable()
 	} else {
-		h.reader.HistoryEnable()
+		h.terminal.Reader.HistoryEnable()
 	}
 
-	mode := inputModeOptions[modeIndex(*h.multiline)]
+	mode := inputModeOptions[modeIndex(h.terminal.Config.Multiline)]
 	return dataResponse(fmt.Sprintf("Switched to %q input mode.", mode)), false
 }
 
@@ -61,7 +59,7 @@ func (h *InputModeCommand) selectInputMode() (bool, error) {
 		Label:        "Select input mode",
 		HideSelected: true,
 		Items:        inputModeOptions,
-		CursorPos:    modeIndex(*h.multiline),
+		CursorPos:    modeIndex(h.terminal.Config.Multiline),
 	}
 
 	_, result, err := prompt.Run()
