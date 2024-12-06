@@ -40,6 +40,7 @@ func (h *InputModeCommand) Handle(_ string) (Response, bool) {
 	}
 
 	h.terminal.Config.Multiline = multiline
+	h.terminal.SetUserPrompt()
 	if h.terminal.Config.Multiline {
 		// disable history for multi-line messages since it is
 		// unusable for future requests
