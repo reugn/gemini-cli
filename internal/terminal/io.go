@@ -77,7 +77,7 @@ func (io *IO) readLine() string {
 }
 
 func (io *IO) readMultiLine() string {
-	defer io.Reader.SetPrompt(io.Prompt.User)
+	defer io.SetUserPrompt()
 	var builder strings.Builder
 	for {
 		input, err := io.Reader.Readline()
@@ -92,7 +92,7 @@ func (io *IO) readMultiLine() string {
 		}
 
 		if builder.Len() == 0 {
-			io.Reader.SetPrompt(io.Prompt.UserNext)
+			io.Reader.SetPrompt(io.Prompt.UserMultilineNext)
 		}
 
 		builder.WriteString(input)
@@ -111,4 +111,13 @@ func (io *IO) handleReadError(err error, inputLen int) string {
 		io.Write(fmt.Sprintf("%s%s\n", io.Prompt.Cli, Error(err.Error())))
 	}
 	return ""
+}
+
+// SetUserPrompt sets the terminal prompt according to the current input mode.
+func (io *IO) SetUserPrompt() {
+	if io.Config.Multiline {
+		io.Reader.SetPrompt(io.Prompt.UserMultiline)
+	} else {
+		io.Reader.SetPrompt(io.Prompt.User)
+	}
 }
