@@ -19,8 +19,11 @@ type GeminiQuery struct {
 var _ MessageHandler = (*GeminiQuery)(nil)
 
 // NewGeminiQuery returns a new GeminiQuery message handler.
-func NewGeminiQuery(io *IO, session *gemini.ChatSession, style string) (*GeminiQuery, error) {
-	renderer, err := glamour.NewTermRenderer(glamour.WithStylePath(style))
+func NewGeminiQuery(io *IO, session *gemini.ChatSession, opts RendererOptions) (*GeminiQuery, error) {
+	renderer, err := glamour.NewTermRenderer(
+		glamour.WithStylePath(opts.StylePath),
+		glamour.WithWordWrap(opts.WordWrap),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to instantiate terminal renderer: %w", err)
 	}

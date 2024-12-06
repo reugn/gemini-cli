@@ -110,6 +110,7 @@ Flags:
   -s, --style string    markdown format style (ascii, dark, light, pink, notty, dracula) (default "auto")
   -t, --term string     multi-line input terminator (default "$")
   -v, --version         version for this command
+  -w, --wrap int        line length for response word wrapping (default 80)
 ```
 
 ## License

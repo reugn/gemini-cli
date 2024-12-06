@@ -27,12 +27,14 @@ func run() int {
 	var configPath string
 	rootCmd.Flags().StringVarP(&opts.GenerativeModel, "model", "m", gemini.DefaultModel,
 		"generative model name")
-	rootCmd.Flags().StringVarP(&opts.Style, "style", "s", "auto",
-		"markdown format style (ascii, dark, light, pink, notty, dracula)")
 	rootCmd.Flags().BoolVar(&opts.Multiline, "multiline", false,
 		"read input as a multi-line string")
 	rootCmd.Flags().StringVarP(&opts.LineTerminator, "term", "t", "$",
 		"multi-line input terminator")
+	rootCmd.Flags().StringVarP(&opts.StylePath, "style", "s", "auto",
+		"markdown format style (ascii, dark, light, pink, notty, dracula)")
+	rootCmd.Flags().IntVarP(&opts.WordWrap, "wrap", "w", 80,
+		"line length for response word wrapping")
 	rootCmd.Flags().StringVarP(&configPath, "config", "c", defaultConfigPath,
 		"path to configuration file in JSON format")
 
