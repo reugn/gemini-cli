@@ -33,7 +33,7 @@ func New(
 	}
 
 	geminiIO := handler.NewIO(terminalIO, terminalIO.Prompt.Gemini)
-	geminiHandler, err := handler.NewGeminiQuery(geminiIO, session, opts.Style)
+	geminiHandler, err := handler.NewGeminiQuery(geminiIO, session, opts.rendererOptions())
 	if err != nil {
 		return nil, err
 	}
