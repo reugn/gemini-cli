@@ -42,13 +42,14 @@ export GEMINI_API_KEY=<your_api_key>
 The system chat message must begin with an exclamation mark and is used for internal operations.
 A short list of supported system commands:
 
-| Command | Description                                        |
-|---------|----------------------------------------------------|
-| !q      | Quit the application                               |
-| !p      | Select the system prompt for the chat <sup>1</sup> |
-| !i      | Toggle input mode (single-line <-> multi-line)     |
-| !m      | Select a model operation <sup>2</sup>              |
-| !h      | Select a history operation <sup>3</sup>            |
+| Command | Description                                                    |
+|---------|----------------------------------------------------------------|
+| !p      | Select the generative model system prompt <sup>1</sup>         |
+| !m      | Select from a list of generative model operations <sup>2</sup> |
+| !h      | Select from a list of chat history operations <sup>3</sup>     |
+| !i      | Toggle the input mode (single-line <-> multi-line)             |
+| !q      | Exit the application                                           |
+| !help   | Show system command instructions                               |
 
 <sup>1</sup> System instruction (also known as "system prompt") is a more forceful prompt to the model.
 The model will follow instructions more closely than with a standard prompt.
