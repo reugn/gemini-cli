@@ -39,8 +39,11 @@ func New(
 	}
 
 	systemIO := handler.NewIO(terminalIO, terminalIO.Prompt.Cli)
-	systemHandler := handler.NewSystemCommand(systemIO, session, configuration,
-		opts.GenerativeModel)
+	systemHandler, err := handler.NewSystemCommand(systemIO, session, configuration,
+		opts.GenerativeModel, opts.rendererOptions())
+	if err != nil {
+		return nil, err
+	}
 
 	return &Chat{
 		io:            terminalIO,

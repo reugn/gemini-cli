@@ -25,8 +25,14 @@ var _ MessageHandler = (*SystemCommand)(nil)
 
 // NewSystemCommand returns a new SystemCommand.
 func NewSystemCommand(io *IO, session *gemini.ChatSession, configuration *config.Configuration,
-	modelName string) *SystemCommand {
+	modelName string, rendererOptions RendererOptions) (*SystemCommand, error) {
+	helpCommandHandler, err := NewHelpCommand(io, rendererOptions)
+	if err != nil {
+		return nil, err
+	}
+
 	handlers := map[string]MessageHandler{
+		cli.SystemCmdHelp:            helpCommandHandler,
 		cli.SystemCmdQuit:            NewQuitCommand(io),
 		cli.SystemCmdSelectPrompt:    NewSystemPromptCommand(io, session, configuration.Data),
 		cli.SystemCmdSelectInputMode: NewInputModeCommand(io),
@@ -37,7 +43,7 @@ func NewSystemCommand(io *IO, session *gemini.ChatSession, configuration *config
 	return &SystemCommand{
 		IO:       io,
 		handlers: handlers,
-	}
+	}, nil
 }
 
 // Handle processes the chat system command.
