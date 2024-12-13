@@ -19,6 +19,7 @@ func (r dataResponse) String() string {
 	return fmt.Sprintf("%s\n", string(r))
 }
 
+//nolint:errname
 type errorResponse struct {
 	error
 }

@@ -28,8 +28,8 @@ func NewGenerativeModelBuilder() *GenerativeModelBuilder {
 
 // newCopyGenerativeModelBuilder creates a new [GenerativeModelBuilder],
 // taking the default values from an existing [genai.GenerativeModel] object.
-func newCopyGenerativeModelBuilder(copy *genai.GenerativeModel) *GenerativeModelBuilder {
-	return &GenerativeModelBuilder{copy: copy}
+func newCopyGenerativeModelBuilder(model *genai.GenerativeModel) *GenerativeModelBuilder {
+	return &GenerativeModelBuilder{copy: model}
 }
 
 // WithName sets the model name.
