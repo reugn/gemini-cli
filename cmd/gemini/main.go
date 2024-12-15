@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	version           = "0.3.1"
+	version           = "0.4.0"
 	apiKeyEnv         = "GEMINI_API_KEY" //nolint:gosec
 	defaultConfigPath = "gemini_cli_config.json"
 )
