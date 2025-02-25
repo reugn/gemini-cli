@@ -20,10 +20,7 @@ var _ MessageHandler = (*GeminiQuery)(nil)
 
 // NewGeminiQuery returns a new GeminiQuery message handler.
 func NewGeminiQuery(io *IO, session *gemini.ChatSession, opts RendererOptions) (*GeminiQuery, error) {
-	renderer, err := glamour.NewTermRenderer(
-		glamour.WithStylePath(opts.StylePath),
-		glamour.WithWordWrap(opts.WordWrap),
-	)
+	renderer, err := opts.newTermRenderer()
 	if err != nil {
 		return nil, fmt.Errorf("failed to instantiate terminal renderer: %w", err)
 	}
