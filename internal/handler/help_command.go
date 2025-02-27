@@ -18,10 +18,7 @@ var _ MessageHandler = (*HelpCommand)(nil)
 
 // NewHelpCommand returns a new HelpCommand.
 func NewHelpCommand(io *IO, opts RendererOptions) (*HelpCommand, error) {
-	renderer, err := glamour.NewTermRenderer(
-		glamour.WithStylePath(opts.StylePath),
-		glamour.WithWordWrap(opts.WordWrap),
-	)
+	renderer, err := opts.newTermRenderer()
 	if err != nil {
 		return nil, fmt.Errorf("failed to instantiate terminal renderer: %w", err)
 	}
