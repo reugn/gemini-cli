@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/manifoldco/promptui"
 	"github.com/reugn/gemini-cli/gemini"
@@ -102,10 +103,13 @@ func (h *ModelCommand) selectModelOption() (string, error) {
 // selectModel returns the selected generative model name.
 func (h *ModelCommand) selectModel(models []string) (string, error) {
 	prompt := promptui.Select{
-		Label:        "Select generative session",
+		Label:        modelOptions[0],
 		HideSelected: true,
 		Items:        models,
 		CursorPos:    slices.Index(models, h.generativeModelName),
+		Searcher: func(input string, index int) bool {
+			return strings.Contains(models[index], input)
+		},
 	}
 
 	_, result, err := prompt.Run()
