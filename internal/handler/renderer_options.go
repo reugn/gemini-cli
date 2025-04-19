@@ -15,7 +15,7 @@ type RendererOptions struct {
 func (o RendererOptions) newTermRenderer() (*glamour.TermRenderer, error) {
 	var styleOption glamour.TermRendererOption
 	switch {
-	case o.StylePath == "auto" && os.Getenv("GLAMOUR_STYLE") != "":
+	case o.StylePath == glamour.AutoStyle && os.Getenv("GLAMOUR_STYLE") != "":
 		styleOption = glamour.WithEnvironmentConfig()
 	default:
 		styleOption = glamour.WithStylePath(o.StylePath)
