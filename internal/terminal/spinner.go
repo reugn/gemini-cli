@@ -62,7 +62,7 @@ func (s *Spinner) Start() {
 	}()
 }
 
-//nolint:errcheck
+//nolint:errcheck,staticcheck
 func (s *Spinner) Clear() {
 	s.writer.WriteString(fmt.Sprintf(moveCursorBackward, s.length))
 	s.writer.WriteString(clearLineFromCursor)
