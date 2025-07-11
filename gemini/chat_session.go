@@ -10,7 +10,7 @@ import (
 	"google.golang.org/api/option"
 )
 
-const DefaultModel = "gemini-1.5-flash"
+const DefaultModel = "gemini-2.5-flash"
 
 // ChatSession represents a gemini powered chat session.
 type ChatSession struct {
