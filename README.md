@@ -106,7 +106,7 @@ Usage:
 Flags:
   -c, --config string   path to configuration file in JSON format (default "gemini_cli_config.json")
   -h, --help            help for this command
-  -m, --model string    generative model name (default "gemini-1.5-flash")
+  -m, --model string    generative model name (default "gemini-2.5-flash")
       --multiline       read input as a multi-line string
   -s, --style string    markdown format style (ascii, dark, light, pink, notty, dracula) (default "auto")
   -t, --term string     multi-line input terminator (default "$")
