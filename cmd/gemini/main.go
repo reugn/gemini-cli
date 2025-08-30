@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"os"
 	"os/user"
 
@@ -23,8 +24,11 @@ func run() int {
 		Version: version,
 	}
 
-	var opts chat.Opts
-	var configPath string
+	var (
+		opts       chat.Opts
+		configPath string
+	)
+
 	rootCmd.Flags().StringVarP(&opts.GenerativeModel, "model", "m", gemini.DefaultModel,
 		"generative model name")
 	rootCmd.Flags().BoolVar(&opts.Multiline, "multiline", false,
@@ -38,7 +42,7 @@ func run() int {
 	rootCmd.Flags().StringVarP(&configPath, "config", "c", defaultConfigPath,
 		"path to configuration file in JSON format")
 
-	rootCmd.RunE = func(_ *cobra.Command, _ []string) error {
+	rootCmd.RunE = func(_ *cobra.Command, _ []string) (err error) {
 		configuration, err := config.NewConfiguration(configPath)
 		if err != nil {
 			return err
@@ -52,20 +56,22 @@ func run() int {
 		if err != nil {
 			return err
 		}
+		defer func() { err = errors.Join(err, chatSession.Close()) }()
 
 		chatHandler, err := chat.New(getCurrentUser(), chatSession, configuration, &opts)
 		if err != nil {
 			return err
 		}
-		chatHandler.Start()
+		defer func() { err = errors.Join(err, chatHandler.Close()) }()
 
-		return chatSession.Close()
+		chatHandler.Start()
+		return nil
 	}
 
-	err := rootCmd.Execute()
-	if err != nil {
+	if err := rootCmd.Execute(); err != nil {
 		return 1
 	}
+
 	return 0
 }
 

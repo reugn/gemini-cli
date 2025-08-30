@@ -54,6 +54,14 @@ func NewIO(config *IOConfig) (*IO, error) {
 	}, nil
 }
 
+// Close releases underlying terminal resources.
+func (io *IO) Close() error {
+	if io.Reader != nil {
+		return io.Reader.Close()
+	}
+	return nil
+}
+
 // Read reads input from the underlying source and returns it as a string.
 // If multiline is true, it reads all available lines; otherwise, it reads a single line.
 func (io *IO) Read() string {
