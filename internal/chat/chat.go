@@ -80,6 +80,11 @@ func (c *Chat) Start() {
 	}
 }
 
+// Close closes the chat.
+func (c *Chat) Close() error {
+	return c.io.Close()
+}
+
 // getHandler returns the handler for the message.
 func (c *Chat) getHandler(prefix string) handler.MessageHandler {
 	if prefix == cli.SystemCmdPrefix {
