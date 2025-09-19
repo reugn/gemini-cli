@@ -36,7 +36,7 @@ func run() int {
 	rootCmd.Flags().StringVarP(&opts.LineTerminator, "term", "t", "$",
 		"multi-line input terminator")
 	rootCmd.Flags().StringVarP(&opts.StylePath, "style", "s", "auto",
-		"markdown format style (ascii, dark, light, pink, notty, dracula)")
+		"markdown format style (ascii, dark, light, pink, notty, dracula, tokyo-night)")
 	rootCmd.Flags().IntVarP(&opts.WordWrap, "wrap", "w", 80,
 		"line length for response word wrapping")
 	rootCmd.Flags().StringVarP(&configPath, "config", "c", defaultConfigPath,
