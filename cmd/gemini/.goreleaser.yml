@@ -1,10 +1,12 @@
+version: 2
+
 project_name: gemini
 
 builds:
   - main: .
     ldflags:
-      - -s -w -X main.version={{.Version}}
-    env: 
+      - -s -w -X main.version={{ .Version }}
+    env:
       - CGO_ENABLED=0
     goos:
       - linux
@@ -12,7 +14,6 @@ builds:
     goarch:
       - amd64
       - arm64
-      - 386
 
 archives:
   - name_template: >-
@@ -26,3 +27,8 @@ changelog:
   filters:
     exclude:
       - "^Merge pull request"
+
+checksum:
+  name_template: "{{ .ArtifactName }}.sha256"
+  split: true
+  algorithm: sha256

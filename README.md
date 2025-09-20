@@ -108,7 +108,7 @@ Flags:
   -h, --help            help for this command
   -m, --model string    generative model name (default "gemini-2.5-flash")
       --multiline       read input as a multi-line string
-  -s, --style string    markdown format style (ascii, dark, light, pink, notty, dracula) (default "auto")
+  -s, --style string    markdown format style (ascii, dark, light, pink, notty, dracula, tokyo-night) (default "auto")
   -t, --term string     multi-line input terminator (default "$")
   -v, --version         version for this command
   -w, --wrap int        line length for response word wrapping (default 80)
