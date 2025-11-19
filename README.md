@@ -74,26 +74,36 @@ If it doesn't exist, the application will attempt to create it using default val
 An example of basic configuration:
 ```json
 {
-  "SystemPrompts": {
+  "system_prompts": {
     "Software Engineer": "You are an experienced software engineer.",
     "Technical Writer": "Act as a tech writer. I will provide you with the basic steps of an app functionality, and you will come up with an engaging article on how to do those steps."
   },
-  "SafetySettings": [
+  "safety_settings": [
     {
-      "Category": 7,
-      "Threshold": 1
+      "category": "HARM_CATEGORY_HARASSMENT",
+      "threshold": "LOW"
     },
     {
-      "Category": 10,
-      "Threshold": 1
+      "category": "HARM_CATEGORY_HATE_SPEECH",
+      "threshold": "LOW"
+    },
+    {
+      "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+      "threshold": "LOW"
+    },
+    {
+      "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+      "threshold": "LOW"
     }
   ],
-  "History": {
+  "history": {
   }
 }
 ```
-Upon user request, the `History` map will be populated with records. Note that the chat history is stored in plain
-text format. See [history operations](#system-commands) for details.
+<sup>1</sup> Valid safety settings threshold values include LOW (block more), MEDIUM, HIGH (block less), and OFF.
+
+<sup>2</sup> Upon user request, the `history` map will be populated with records. Note that the chat history is stored
+in plain text format. See [history operations](#system-commands) for details.
 
 ### CLI help
 ```console
