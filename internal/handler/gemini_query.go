@@ -45,7 +45,7 @@ func (h *GeminiQuery) Handle(message string) (Response, bool) {
 	var b strings.Builder
 	for _, candidate := range response.Candidates {
 		for _, part := range candidate.Content.Parts {
-			_, _ = fmt.Fprintf(&b, "%s", part)
+			_, _ = fmt.Fprint(&b, part.Text)
 		}
 	}
 
