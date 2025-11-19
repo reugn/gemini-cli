@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"iter"
 	"sync"
 
-	"github.com/google/generative-ai-go/genai"
-	"google.golang.org/api/option"
+	"google.golang.org/genai"
 )
 
 const DefaultModel = "gemini-2.5-flash"
@@ -16,66 +16,59 @@ const DefaultModel = "gemini-2.5-flash"
 type ChatSession struct {
 	ctx context.Context
 
-	client  *genai.Client
-	model   *genai.GenerativeModel
-	session *genai.ChatSession
+	client *genai.Client
+	chat   *genai.Chat
+	config *genai.GenerateContentConfig
+	model  string
 
 	loadModels sync.Once
 	models     []string
 }
 
 // NewChatSession returns a new [ChatSession].
-func NewChatSession(
-	ctx context.Context, modelBuilder *GenerativeModelBuilder, apiKey string,
-) (*ChatSession, error) {
-	client, err := genai.NewClient(ctx, option.WithAPIKey(apiKey))
+func NewChatSession(ctx context.Context, model string, safetySettings []*genai.SafetySetting) (*ChatSession, error) {
+	client, err := genai.NewClient(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create client: %w", err)
 	}
 
-	generativeModel := modelBuilder.build(client)
+	config := &genai.GenerateContentConfig{SafetySettings: safetySettings}
+	chat, err := client.Chats.Create(ctx, model, config, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create chat: %w", err)
+	}
+
 	return &ChatSession{
-		ctx:     ctx,
-		client:  client,
-		model:   generativeModel,
-		session: generativeModel.StartChat(),
+		ctx:    ctx,
+		client: client,
+		chat:   chat,
+		config: config,
+		model:  model,
 	}, nil
 }
 
 // SendMessage sends a request to the model as part of a chat session.
 func (c *ChatSession) SendMessage(input string) (*genai.GenerateContentResponse, error) {
-	return c.session.SendMessage(c.ctx, genai.Text(input))
+	return c.chat.SendMessage(c.ctx, genai.Part{Text: input})
 }
 
 // SendMessageStream is like SendMessage, but with a streaming request.
-func (c *ChatSession) SendMessageStream(input string) *genai.GenerateContentResponseIterator {
-	return c.session.SendMessageStream(c.ctx, genai.Text(input))
-}
-
-// SetModel sets a new generative model configured with the builder and starts
-// a new chat session. It preserves the history of the previous chat session.
-func (c *ChatSession) SetModel(modelBuilder *GenerativeModelBuilder) {
-	history := c.session.History
-	c.model = modelBuilder.build(c.client)
-	c.session = c.model.StartChat()
-	c.session.History = history
-}
-
-// CopyModelBuilder returns a copy builder for the chat generative model.
-func (c *ChatSession) CopyModelBuilder() *GenerativeModelBuilder {
-	return newCopyGenerativeModelBuilder(c.model)
+func (c *ChatSession) SendMessageStream(input string) iter.Seq2[*genai.GenerateContentResponse, error] {
+	return c.chat.SendMessageStream(c.ctx, genai.Part{Text: input})
 }
 
 // ModelInfo returns information about the chat generative model in JSON format.
 func (c *ChatSession) ModelInfo() (string, error) {
-	modelInfo, err := c.model.Info(c.ctx)
+	modelInfo, err := c.client.Models.Get(c.ctx, c.model, nil)
 	if err != nil {
 		return "", err
 	}
+
 	encoded, err := json.MarshalIndent(modelInfo, "", "  ")
 	if err != nil {
 		return "", fmt.Errorf("error encoding model info: %w", err)
 	}
+
 	return string(encoded), nil
 }
 
@@ -83,34 +76,57 @@ func (c *ChatSession) ModelInfo() (string, error) {
 func (c *ChatSession) ListModels() []string {
 	c.loadModels.Do(func() {
 		c.models = []string{DefaultModel}
-		iter := c.client.ListModels(c.ctx)
-		for {
-			modelInfo, err := iter.Next()
+		for model, err := range c.client.Models.All(c.ctx) {
 			if err != nil {
-				break
+				continue
 			}
-			c.models = append(c.models, modelInfo.Name)
+			c.models = append(c.models, model.Name)
 		}
 	})
 	return c.models
 }
 
+// SetModel sets the chat generative model.
+func (c *ChatSession) SetModel(model string) error {
+	chat, err := c.client.Chats.Create(c.ctx, model, c.config, c.GetHistory())
+	if err != nil {
+		return fmt.Errorf("failed to set model: %w", err)
+	}
+
+	c.model = model
+	c.chat = chat
+	return nil
+}
+
 // GetHistory returns the chat session history.
 func (c *ChatSession) GetHistory() []*genai.Content {
-	return c.session.History
+	return c.chat.History(true)
 }
 
 // SetHistory sets the chat session history.
-func (c *ChatSession) SetHistory(content []*genai.Content) {
-	c.session.History = content
+func (c *ChatSession) SetHistory(history []*genai.Content) error {
+	chat, err := c.client.Chats.Create(c.ctx, c.model, c.config, history)
+	if err != nil {
+		return fmt.Errorf("failed to set history: %w", err)
+	}
+
+	c.chat = chat
+	return nil
 }
 
 // ClearHistory clears the chat session history.
-func (c *ChatSession) ClearHistory() {
-	c.session.History = make([]*genai.Content, 0)
+func (c *ChatSession) ClearHistory() error {
+	return c.SetHistory(nil)
 }
 
-// Close closes the chat session.
-func (c *ChatSession) Close() error {
-	return c.client.Close()
+// SetSystemInstruction sets the chat session system instruction.
+func (c *ChatSession) SetSystemInstruction(systemInstruction *genai.Content) error {
+	c.config.SystemInstruction = systemInstruction
+	chat, err := c.client.Chats.Create(c.ctx, c.model, c.config, c.GetHistory())
+	if err != nil {
+		return fmt.Errorf("failed to set system instruction: %w", err)
+	}
+
+	c.chat = chat
+	return nil
 }

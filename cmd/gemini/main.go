@@ -14,7 +14,6 @@ import (
 
 const (
 	version           = "0.4.0"
-	apiKeyEnv         = "GEMINI_API_KEY" //nolint:gosec
 	defaultConfigPath = "gemini_cli_config.json"
 )
 
@@ -48,15 +47,11 @@ func run() int {
 			return err
 		}
 
-		modelBuilder := gemini.NewGenerativeModelBuilder().
-			WithName(opts.GenerativeModel).
-			WithSafetySettings(configuration.Data.SafetySettings)
-		apiKey := os.Getenv(apiKeyEnv)
-		chatSession, err := gemini.NewChatSession(context.Background(), modelBuilder, apiKey)
+		chatSession, err := gemini.NewChatSession(context.Background(), opts.GenerativeModel,
+			configuration.Data.GenaiSafetySettings())
 		if err != nil {
 			return err
 		}
-		defer func() { err = errors.Join(err, chatSession.Close()) }()
 
 		chatHandler, err := chat.New(getCurrentUser(), chatSession, configuration, &opts)
 		if err != nil {

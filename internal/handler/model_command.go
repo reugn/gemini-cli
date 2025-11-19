@@ -49,6 +49,7 @@ func (h *ModelCommand) Handle(_ string) (Response, bool) {
 	default:
 		response = newErrorResponse(fmt.Errorf("unsupported option: %s", option))
 	}
+
 	return response, false
 }
 
@@ -64,8 +65,10 @@ func (h *ModelCommand) handleSelectModel() Response {
 		return dataResponse(unchangedMessage)
 	}
 
-	modelBuilder := h.session.CopyModelBuilder().WithName(modelName)
-	h.session.SetModel(modelBuilder)
+	if err := h.session.SetModel(modelName); err != nil {
+		return newErrorResponse(err)
+	}
+
 	h.generativeModelName = modelName
 
 	return dataResponse(fmt.Sprintf("Selected %q generative model.", modelName))
@@ -81,6 +84,7 @@ func (h *ModelCommand) handleModelInfo() Response {
 	if err != nil {
 		return newErrorResponse(err)
 	}
+
 	return dataResponse(modelInfo)
 }
 

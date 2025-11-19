@@ -5,10 +5,10 @@ import (
 	"slices"
 	"time"
 
-	"github.com/google/generative-ai-go/genai"
 	"github.com/manifoldco/promptui"
 	"github.com/reugn/gemini-cli/gemini"
 	"github.com/reugn/gemini-cli/internal/config"
+	"google.golang.org/genai"
 )
 
 var historyOptions = []string{
@@ -63,7 +63,10 @@ func (h *HistoryCommand) Handle(_ string) (Response, bool) {
 // handleClear handles the chat history clear request.
 func (h *HistoryCommand) handleClear() Response {
 	h.terminal.Write(h.terminalPrompt)
-	h.session.ClearHistory()
+	if err := h.session.ClearHistory(); err != nil {
+		return newErrorResponse(err)
+	}
+
 	return dataResponse("Cleared the chat history.")
 }
 
@@ -77,6 +80,7 @@ func (h *HistoryCommand) handleStore() Response {
 
 	timeLabel := time.Now().In(time.Local).Format(time.DateTime)
 	recordLabel := fmt.Sprintf("%s - %s", timeLabel, historyLabel)
+
 	h.configuration.Data.AddHistoryRecord(
 		recordLabel,
 		h.session.GetHistory(),
@@ -97,7 +101,10 @@ func (h *HistoryCommand) handleLoad() Response {
 		return newErrorResponse(err)
 	}
 
-	h.session.SetHistory(history)
+	if err := h.session.SetHistory(history); err != nil {
+		return newErrorResponse(err)
+	}
+
 	return dataResponse(fmt.Sprintf("%q has been loaded to the chat history.", label))
 }
 

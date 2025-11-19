@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/google/generative-ai-go/genai"
 	"github.com/manifoldco/promptui"
 	"github.com/reugn/gemini-cli/gemini"
 	"github.com/reugn/gemini-cli/internal/config"
+	"google.golang.org/genai"
 )
 
 // SystemPromptCommand processes the chat prompt system command.
@@ -40,9 +40,9 @@ func (h *SystemPromptCommand) Handle(_ string) (Response, bool) {
 		return newErrorResponse(err), false
 	}
 
-	modelBuilder := h.session.CopyModelBuilder().
-		WithSystemInstruction(systemPrompt)
-	h.session.SetModel(modelBuilder)
+	if err := h.session.SetSystemInstruction(systemPrompt); err != nil {
+		return newErrorResponse(err), false
+	}
 
 	return dataResponse(fmt.Sprintf("Selected %q system instruction.", label)), false
 }
