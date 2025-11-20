@@ -48,7 +48,7 @@ func run() int {
 		}
 
 		chatSession, err := gemini.NewChatSession(context.Background(), opts.GenerativeModel,
-			configuration.Data.GenaiSafetySettings())
+			configuration.Data.GenaiContentConfig())
 		if err != nil {
 			return err
 		}

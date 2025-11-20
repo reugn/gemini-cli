@@ -96,6 +96,16 @@ An example of basic configuration:
       "threshold": "LOW"
     }
   ],
+  "tools": [
+    {
+      "name": "GOOGLE_SEARCH",
+      "enabled": true
+    },
+    {
+      "name": "URL_CONTEXT",
+      "enabled": true
+    }
+  ],
   "history": {
   }
 }

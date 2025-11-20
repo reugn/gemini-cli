@@ -26,14 +26,14 @@ type ChatSession struct {
 }
 
 // NewChatSession returns a new [ChatSession].
-func NewChatSession(ctx context.Context, model string, safetySettings []*genai.SafetySetting) (*ChatSession, error) {
+func NewChatSession(ctx context.Context, model string,
+	contentConfig *genai.GenerateContentConfig) (*ChatSession, error) {
 	client, err := genai.NewClient(ctx, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create client: %w", err)
 	}
 
-	config := &genai.GenerateContentConfig{SafetySettings: safetySettings}
-	chat, err := client.Chats.Create(ctx, model, config, nil)
+	chat, err := client.Chats.Create(ctx, model, contentConfig, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create chat: %w", err)
 	}
@@ -42,7 +42,7 @@ func NewChatSession(ctx context.Context, model string, safetySettings []*genai.S
 		ctx:    ctx,
 		client: client,
 		chat:   chat,
-		config: config,
+		config: contentConfig,
 		model:  model,
 	}, nil
 }
