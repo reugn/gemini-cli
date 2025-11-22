@@ -8,7 +8,7 @@ require (
 	github.com/manifoldco/promptui v0.9.0
 	github.com/muesli/termenv v0.16.0
 	github.com/spf13/cobra v1.10.1
-	google.golang.org/genai v1.35.0
+	google.golang.org/genai v1.36.0
 )
 
 require (
